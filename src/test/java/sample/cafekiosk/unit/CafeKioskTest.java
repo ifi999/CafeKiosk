@@ -24,6 +24,35 @@ class CafeKioskTest {
     }
 
     @Test
+    public void addSeveralBeverages() {
+        //given
+        CafeKiosk cafeKiosk = new CafeKiosk();
+
+        //when
+        Americano americano = new Americano();
+        cafeKiosk.add(americano,2);
+
+        //then
+        assertThat(cafeKiosk.getBeverages().get(0)).isEqualTo(americano);
+        assertThat(cafeKiosk.getBeverages().get(1)).isEqualTo(americano);
+        assertThat(cafeKiosk.getBeverages().size()).isEqualTo(2);
+        assertThat(cafeKiosk.getBeverages()).hasSize(2);
+        assertThat(cafeKiosk.getBeverages().get(0).getName()).isEqualTo("아메리카노");
+    }
+
+    @Test
+    public void addZeroBeverages() {
+        //given
+        CafeKiosk cafeKiosk = new CafeKiosk();
+        Americano americano = new Americano();
+
+        //then
+        assertThatThrownBy(() -> cafeKiosk.add(americano, 0))
+                .isInstanceOf(IllegalArgumentException.class)
+                .hasMessage("음료는 1잔 이상 주문할 수 있다.");
+    }
+
+    @Test
     public void remove() {
         //given
         CafeKiosk cafeKiosk = new CafeKiosk();
