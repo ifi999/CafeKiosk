@@ -37,6 +37,24 @@ class ProductRepositoryTest {
                 );
     }
 
+    @DisplayName("상품 번호 목록으로 상품들을 조회한다.")
+    @Test
+    public void findAllByProductNumberIn() {
+        // given
+        saveProducts();
+
+        // when
+        List<Product> products = productRepository.findAllByProductNumberIn(List.of("001", "002"));
+
+        // then
+        assertThat(products).hasSize(2)
+                .extracting("productNumber", "name", "sellingStatus")
+                .containsExactlyInAnyOrder(
+                        tuple("001", "아메리카노", ProductSellingStatus.SELLING),
+                        tuple("002", "라떼", ProductSellingStatus.HOLD)
+                );
+    }
+
     private void saveProducts() {
         Product product1 = Product.builder()
                 .productNumber("001")
