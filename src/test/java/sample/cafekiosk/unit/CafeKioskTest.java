@@ -139,7 +139,7 @@ class CafeKioskTest {
                 .hasMessage("주문 시간이 아니다.");
     }
 
-    @DisplayName("키오스크에 담긴 주문 목록의 총 합계 가격을 출력한다.")
+    @DisplayName("키오스크에 담긴 주문 목록의 총 합계 금액을 계산할 수 있다.")
     @Test
     public void calculateTotalPrice() {
         //given
@@ -147,13 +147,13 @@ class CafeKioskTest {
         Americano americano = new Americano();
         Latte latte = new Latte();
 
-        //when
         cafeKiosk.add(americano);
         cafeKiosk.add(latte);
+
+        //when
         int totalPrice = cafeKiosk.calculateTotalPrice();
 
         //then
         assertThat(totalPrice).isEqualTo(9500);
     }
-
 }
