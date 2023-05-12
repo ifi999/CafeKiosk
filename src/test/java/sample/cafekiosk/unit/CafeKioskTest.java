@@ -1,6 +1,7 @@
 package sample.cafekiosk.unit;
 
 import org.assertj.core.api.Assertions;
+import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import sample.cafekiosk.unit.beverage.Americano;
 import sample.cafekiosk.unit.beverage.Latte;
@@ -12,6 +13,7 @@ import static org.assertj.core.api.Assertions.*;
 
 class CafeKioskTest {
 
+    @DisplayName("키오스크에 음료 1개 추가하면 주문 목록에 담긴다.")
     @Test
     public void add() {
         //given
@@ -26,6 +28,7 @@ class CafeKioskTest {
         assertThat(cafeKiosk.getBeverages().get(0).getName()).isEqualTo("아메리카노");
     }
 
+    @DisplayName("키오스크에 음료 여러개 추가하면 주문 목록에 담긴다.")
     @Test
     public void addSeveralBeverages() {
         //given
@@ -43,6 +46,7 @@ class CafeKioskTest {
         assertThat(cafeKiosk.getBeverages().get(0).getName()).isEqualTo("아메리카노");
     }
 
+    @DisplayName("키오스크에 음료 0개를 추가할 수 없다.")
     @Test
     public void addZeroBeverages() {
         //given
@@ -55,6 +59,7 @@ class CafeKioskTest {
                 .hasMessage("음료는 1잔 이상 주문할 수 있다.");
     }
 
+    @DisplayName("키오스크에 담긴 주문 목록 중 음료 1개를 제거한다.")
     @Test
     public void remove() {
         //given
@@ -70,6 +75,7 @@ class CafeKioskTest {
         assertThat(cafeKiosk.getBeverages()).isEmpty();
     }
 
+    @DisplayName("키오스크에 담긴 주문 목록을 모두 비운다.")
     @Test
     public void clear() {
         //given
@@ -87,6 +93,7 @@ class CafeKioskTest {
         assertThat(cafeKiosk.getBeverages()).isEmpty();
     }
 
+    @DisplayName("키오스크에 담긴 주문 목록을 주문 생성한다.")
     @Test
     public void createOrder() {
         //given
@@ -102,6 +109,7 @@ class CafeKioskTest {
         assertThat(order.getBeverages().get(0).getName()).isEqualTo("아메리카노");
     }
 
+    @DisplayName("키오스크에 담긴 주문 목록을 영업 시간에 주문 생성한다.")
     @Test
     public void createOrderWithCurrentTime() {
         //given
@@ -117,6 +125,7 @@ class CafeKioskTest {
         assertThat(order.getBeverages().get(0).getName()).isEqualTo("아메리카노");
     }
 
+    @DisplayName("키오스크에 담긴 주문 목록을 영업 시간 이외에 주문 생성할 수 없다.")
     @Test
     public void createOrderOutsideOpenTime() {
         //given
@@ -130,6 +139,7 @@ class CafeKioskTest {
                 .hasMessage("주문 시간이 아니다.");
     }
 
+    @DisplayName("키오스크에 담긴 주문 목록의 총 합계 가격을 출력한다.")
     @Test
     public void calculateTotalPrice() {
         //given
