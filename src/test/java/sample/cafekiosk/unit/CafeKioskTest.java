@@ -130,4 +130,20 @@ class CafeKioskTest {
                 .hasMessage("주문 시간이 아니다.");
     }
 
+    @Test
+    public void calculateTotalPrice() {
+        //given
+        CafeKiosk cafeKiosk = new CafeKiosk();
+        Americano americano = new Americano();
+        Latte latte = new Latte();
+
+        //when
+        cafeKiosk.add(americano);
+        cafeKiosk.add(latte);
+        int totalPrice = cafeKiosk.calculateTotalPrice();
+
+        //then
+        assertThat(totalPrice).isEqualTo(9500);
+    }
+
 }
