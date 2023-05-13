@@ -6,6 +6,7 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.ActiveProfiles;
+import org.springframework.transaction.annotation.Transactional;
 import sample.cafekiosk.spring.api.controller.order.request.OrderCreateRequest;
 import sample.cafekiosk.spring.api.service.order.response.OrderResponse;
 import sample.cafekiosk.spring.domain.order.OrderRepository;
@@ -14,14 +15,16 @@ import sample.cafekiosk.spring.domain.product.Product;
 import sample.cafekiosk.spring.domain.product.ProductRepository;
 import sample.cafekiosk.spring.domain.product.ProductSellingStatus;
 import sample.cafekiosk.spring.domain.product.ProductType;
+import sample.cafekiosk.spring.domain.stock.Stock;
+import sample.cafekiosk.spring.domain.stock.StockRepository;
 
 import java.time.LocalDateTime;
 import java.util.List;
 
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.tuple;
+import static org.assertj.core.api.Assertions.*;
 
 @ActiveProfiles("test")
+//@Transactional
 @SpringBootTest
 class OrderServiceTest {
 
@@ -35,14 +38,23 @@ class OrderServiceTest {
     private OrderProductRepository orderProductRepository;
 
     @Autowired
+    private StockRepository stockRepository;
+
+    @Autowired
     private OrderService orderService;
 
+    /**
+     *  서비스 클래스에서 @Transactional를 설정하지 않고 테스트 클래스에서 AfterEach를 사용한다면 JPA 영속성 컨텍스트가 생기지 않아서 테스트에 문제가 생긴다.
+     *  그렇다고 테스트 클래스에서 애너테이션을 달고 테스트를 해서 넘겼을 때, 만약 실제 서비스 클래스에 존재하지 않는다면 문제를 찾기 힘들 것이다.
+     *  그래서 테스트 클래스에서는 @Transactional을 사용하지 않고, @AfterEach를 활용한다.
+     */
     @AfterEach
     void tearDown() {
 //        productRepository.deleteAll();
         orderProductRepository.deleteAllInBatch();
         productRepository.deleteAllInBatch();
         orderRepository.deleteAllInBatch();
+        stockRepository.deleteAllInBatch();
     }
 
     @DisplayName("주문번호 리스트를 받아 주문을 생성한다.")
@@ -51,6 +63,7 @@ class OrderServiceTest {
         // given
         LocalDateTime registeredDateTime = LocalDateTime.now();
         saveProducts();
+        saveStocks(2);
 
         OrderCreateRequest request = OrderCreateRequest.builder()
                 .productNumbers(List.of("001", "002"))
@@ -78,6 +91,7 @@ class OrderServiceTest {
         // given
         LocalDateTime registeredDateTime = LocalDateTime.now();
         saveProducts();
+        saveStocks(2);
 
         OrderCreateRequest request = OrderCreateRequest.builder()
                 .productNumbers(List.of("001", "001"))
@@ -99,9 +113,72 @@ class OrderServiceTest {
                 );
     }
 
+    @DisplayName("재고와 관련된 상품이 포함되어 있는 주문번호 리스트를 받아 주문을 생성한다.")
+    @Test
+    public void createOrderWithStock() {
+        // given
+        LocalDateTime registeredDateTime = LocalDateTime.now();
+        saveProducts();
+        saveStocks(2);
+
+        OrderCreateRequest request = OrderCreateRequest.builder()
+                .productNumbers(List.of("001", "001", "002", "003"))
+                .build();
+
+        // when
+        OrderResponse orderResponse = orderService.createOrder(request, registeredDateTime);
+
+        // then
+        assertThat(orderResponse.getId()).isNotNull();
+        assertThat(orderResponse)
+                .extracting("registeredDateTime", "totalPrice")
+                .contains(registeredDateTime, 10000);
+        assertThat(orderResponse.getProducts()).hasSize(4)
+                .extracting("productNumber", "price")
+                .containsExactlyInAnyOrder(
+                        tuple("001", 1000),
+                        tuple("001", 1000),
+                        tuple("002", 3000),
+                        tuple("003", 5000)
+                );
+
+        List<Stock> stocks = stockRepository.findAll();
+        assertThat(stocks).hasSize(2)
+                .extracting("productNumber", "quantity")
+                .containsExactlyInAnyOrder(
+                        tuple("001", 0),
+                        tuple("002", 1)
+                );
+    }
+
+    @DisplayName("재고가 없는 상품으로 주문을 생성하려는 경우 예외가 발생한다.")
+    @Test
+    public void createOrderWithNoStock() {
+        // given
+        LocalDateTime registeredDateTime = LocalDateTime.now();
+        saveProducts();
+        saveStocks(1);
+
+        OrderCreateRequest request = OrderCreateRequest.builder()
+                .productNumbers(List.of("001", "001", "002", "003"))
+                .build();
+
+        // then
+        assertThatThrownBy(() -> orderService.createOrder(request, registeredDateTime))
+                .isInstanceOf(IllegalArgumentException.class)
+                .hasMessage("재고가 부족한 상품이 있습니다.");
+    }
+
+    private void saveStocks(int quantity) {
+        Stock stock1 = Stock.create("001", quantity);
+        Stock stock2 = Stock.create("002", quantity);
+
+        stockRepository.saveAll(List.of(stock1, stock2));
+    }
+
     private void saveProducts() {
-        Product product1 = createProduct(ProductType.HANDMADE, "001", 1000);
-        Product product2 = createProduct(ProductType.HANDMADE, "002", 3000);
+        Product product1 = createProduct(ProductType.BOTTLE, "001", 1000);
+        Product product2 = createProduct(ProductType.BAKERY, "002", 3000);
         Product product3 = createProduct(ProductType.HANDMADE, "003", 5000);
 
         productRepository.saveAll(List.of(product1, product2, product3));
