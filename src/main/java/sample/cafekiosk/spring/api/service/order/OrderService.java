@@ -20,7 +20,7 @@ import java.util.Map;
 import java.util.stream.Collectors;
 
 @Service
-@Transactional
+@Transactional(readOnly = true)
 @RequiredArgsConstructor
 public class OrderService {
 
@@ -32,6 +32,7 @@ public class OrderService {
      *  재고 감소 -> 동시성 문제 고민
      *  optimistic lock / pessimistic lock / ...
      */
+    @Transactional
     public OrderResponse createOrder(OrderCreateRequest request, LocalDateTime registeredDateTime) {
         List<String> productNumbers = request.getProductNumbers();
         List<Product> products = findProductsBy(productNumbers);
