@@ -5,7 +5,7 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 
-import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 @SpringBootTest
 class MailSendClientTest {
@@ -22,11 +22,10 @@ class MailSendClientTest {
         String subject = "subject1";
         String content = "content1";
 
-        // when
-        boolean result = mailSendClient.sendEmail(fromEmail, toEmail, subject, content);
-
         // then
-        assertThat(result).isTrue();
+        assertThatThrownBy(() -> mailSendClient.sendEmail(fromEmail, toEmail, subject, content))
+                .isInstanceOf(IllegalArgumentException.class)
+                .hasMessage("메일 전송");
     }
 
 }
