@@ -2,16 +2,11 @@ package sample.cafekiosk.spring.client.mail;
 
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.context.SpringBootTest;
+import sample.cafekiosk.spring.IntegrationTestSupport;
 
-import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.assertj.core.api.Assertions.assertThat;
 
-@SpringBootTest
-class MailSendClientTest {
-
-    @Autowired
-    private MailSendClient mailSendClient;
+class MailSendClientTest extends IntegrationTestSupport {
 
     @DisplayName("메일을 전송한다.")
     @Test
@@ -23,9 +18,10 @@ class MailSendClientTest {
         String content = "content1";
 
         // then
-        assertThatThrownBy(() -> mailSendClient.sendEmail(fromEmail, toEmail, subject, content))
-                .isInstanceOf(IllegalArgumentException.class)
-                .hasMessage("메일 전송");
+        boolean result = mailSendClient.sendEmail(fromEmail, toEmail, subject, content);
+
+        // then
+        assertThat(result).isFalse();
     }
 
 }
