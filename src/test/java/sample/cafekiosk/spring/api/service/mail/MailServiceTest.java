@@ -14,8 +14,8 @@ import static org.assertj.core.api.Assertions.assertThat;
 @ExtendWith(MockitoExtension.class)
 class MailServiceTest {
 
-//    @Mock
-    @Spy // 실제 객체를 기반으로 만듦. 일부만 Stubbing 하도록 만들 수 있다.
+    @Mock
+//    @Spy // 실제 객체를 기반으로 만듦. 일부만 Stubbing 하도록 만들 수 있다.
     private MailSendClient mailSendClient;
 
     @Mock
@@ -43,10 +43,16 @@ class MailServiceTest {
         // @Spy는 실제 객체를 기반으로 만들기 때문에 when을 사용할 수 없음. 대신 do~를 사용함.
 //        Mockito.when(mailSendClient.sendEmail(ArgumentMatchers.any(String.class), ArgumentMatchers.any(String.class), ArgumentMatchers.any(String.class), ArgumentMatchers.any(String.class)))
 //                .thenReturn(true);
+
         // log 찍는 기능은 실제 객체에 있는 것으로 나오고, 아래 정의한 것만 Stubbing함.
-        Mockito.doReturn(true)
-                .when(mailSendClient)
-                .sendEmail(ArgumentMatchers.any(String.class), ArgumentMatchers.any(String.class), ArgumentMatchers.any(String.class), ArgumentMatchers.any(String.class));
+//        Mockito.doReturn(true)
+//                .when(mailSendClient)
+//                .sendEmail(ArgumentMatchers.any(String.class), ArgumentMatchers.any(String.class), ArgumentMatchers.any(String.class), ArgumentMatchers.any(String.class));
+
+        // 여긴 given 위치인데 왜 Mockito.when을 사용해야함??
+        // -> 그래서 BDDMockito.given() 이 생긴듯. 내부 보면 Mockito를 감싼 것
+        BDDMockito.given(mailSendClient.sendEmail(ArgumentMatchers.any(String.class), ArgumentMatchers.any(String.class), ArgumentMatchers.any(String.class), ArgumentMatchers.any(String.class)))
+                .willReturn(true);
 
         // when
         boolean result = mailService.sendMail(fromEmail, toEmail, subject, content);
